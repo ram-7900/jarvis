@@ -31,7 +31,9 @@ Restart Claude Code once more. Done. Jarvis is on in every project.
 
 ## Shut him up
 
-Start typing your next prompt. Jarvis stops mid-sentence. A newer line also cuts off an older one.
+Type `/jarvis:stfu`. Jarvis stops mid-sentence, and Claude never even sees the command, so there's no reply for Jarvis to comment on.
+
+Sending any other prompt also stops him, and a newer line always cuts off an older one.
 
 ## Update
 

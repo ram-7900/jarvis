@@ -1,6 +1,6 @@
 {
   "name": "jarvis",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Spoken Jarvis summary when Claude finishes, needs you, or is blocked.",
   "author": {
     "name": "Sriram Maruvada"
@@ -48,6 +48,10 @@
             "type": "command",
             "async": true,
             "command": "powershell -c 'Get-Content $env:TEMP/jarvis.pid -EA 0 | % { Stop-Process -Id $_ -Force -EA 0 }'"
+          },
+          {
+            "type": "command",
+            "command": "grep -qE '\"prompt\": ?\"/(jarvis:)?stfu' && { echo \"Jarvis: shutting up, sir.\" >&2; exit 2; } || true"
           }
         ]
       }
