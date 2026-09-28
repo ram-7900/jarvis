@@ -56,6 +56,6 @@ node scripts/generate-sounds.mjs
 2. `agent/jarvis.py` sends the end of Claude's reply to Groq through [agno](https://docs.agno.com/models/groq), and gets back a "Sir, ..." line.
 3. `scripts/voice.mjs` speaks it with the Windows voice, adds a little helmet-speaker shimmer, and plays it.
 
-The `Notification` hook plays the approval line when Claude asks for a permission.
+The approval line also plays when Claude asks for a permission, shows you an options menu, or wants a plan approved.
 
 Heads-up: the end of each Claude reply goes to Groq to be summarized.

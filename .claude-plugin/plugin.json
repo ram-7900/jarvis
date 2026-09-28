@@ -1,12 +1,45 @@
 {
   "name": "jarvis",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Spoken Jarvis summary when Claude finishes, needs you, or is blocked.",
-  "author": { "name": "Sriram Maruvada" },
+  "author": {
+    "name": "Sriram Maruvada"
+  },
   "hooks": {
-    "Stop": [{ "hooks": [{ "type": "command", "async": true,
-      "command": "uv run -q --project \"${CLAUDE_PLUGIN_ROOT}\" \"${CLAUDE_PLUGIN_ROOT}/agent/jarvis.py\"" }] }],
-    "Notification": [{ "matcher": "permission_prompt", "hooks": [{ "type": "command", "async": true,
-      "command": "powershell -c \"(New-Object Media.SoundPlayer '$(cygpath -w \"${CLAUDE_PLUGIN_ROOT}\")/sounds/needs-action.wav').PlaySync()\"" }] }]
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "async": true,
+            "command": "uv run -q --project \"${CLAUDE_PLUGIN_ROOT}\" \"${CLAUDE_PLUGIN_ROOT}/agent/jarvis.py\""
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "matcher": "permission_prompt",
+        "hooks": [
+          {
+            "type": "command",
+            "async": true,
+            "command": "powershell -c \"(New-Object Media.SoundPlayer '$(cygpath -w \"${CLAUDE_PLUGIN_ROOT}\")/sounds/needs-action.wav').PlaySync()\""
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "AskUserQuestion|ExitPlanMode",
+        "hooks": [
+          {
+            "type": "command",
+            "async": true,
+            "command": "powershell -c \"(New-Object Media.SoundPlayer '$(cygpath -w \"${CLAUDE_PLUGIN_ROOT}\")/sounds/needs-action.wav').PlaySync()\""
+          }
+        ]
+      }
+    ]
   }
 }
