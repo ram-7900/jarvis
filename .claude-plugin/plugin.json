@@ -1,7 +1,7 @@
 {
   "name": "jarvis",
-  "version": "0.7.0",
-  "description": "Spoken Jarvis summary when Claude finishes, needs you, or is blocked.",
+  "version": "0.7.1",
+  "description": "A sarcastic British butler who tells you, out loud, when Claude is done, needs you, or is judging you.",
   "author": {
     "name": "Sriram Maruvada"
   },

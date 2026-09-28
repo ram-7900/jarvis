@@ -1,6 +1,14 @@
 {
   "name": "jarvis",
-  "description": "Jarvis voice cues for Claude Code.",
-  "owner": { "name": "Sriram Maruvada" },
-  "plugins": [{ "name": "jarvis", "description": "Spoken Jarvis summary when Claude finishes, needs you, or is blocked.", "source": "./" }]
+  "description": "One butler. Zero chill. Voice cues for Claude Code.",
+  "owner": {
+    "name": "Sriram Maruvada"
+  },
+  "plugins": [
+    {
+      "name": "jarvis",
+      "description": "A sarcastic British butler who tells you, out loud, when Claude is done, needs you, or is judging you.",
+      "source": "./"
+    }
+  ]
 }

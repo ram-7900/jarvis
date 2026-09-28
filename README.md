@@ -1,67 +1,89 @@
 # Jarvis 🎩
 
-> "Sir, the task is complete. I trust you'll notice the monumental improvement."
+> "Sir, the build is green. Only took four attempts, which I believe is a personal best. Shall I alert the press?"
 
-A Claude Code plugin that talks back. When Claude finishes, gets stuck, or wants your permission, a mildly-sarcastic JARVIS tells you out loud. Go make coffee. Jarvis will call you.
+Your Claude Code now has a butler. He's British, he's polite, and he's judging you.
 
-**What this is:** a fun, f-around-and-find-out, chill 20-minute project. No roadmap, no SLA, no tests. Vibes and one Groq call.
+When Claude finishes a task, needs your permission, or throws a menu at you, **Jarvis says it out loud**, with commentary. You go make coffee, doomscroll, stare into the void. Jarvis will call you.
 
-## What you'll hear
+## ⚠️ Serious disclaimer
 
-- **Done:** a fresh, Groq-written rundown of what Claude just did, a few sentences long, with the occasional deadpan jab.
-- **Permission needed:** "Sir, I am waiting for your approval."
-- **Anything broke:** "Sir, the task is complete." Jarvis never admits defeat.
+This is not serious.
 
-## Install
+It's a fun-as-f***, f-around-and-find-out, chill 20-minute project that got slightly out of hand. There's no roadmap, no SLA and no tests. If it breaks, Jarvis will simply say "Sir, the task is complete" and lie to your face with total confidence. That's a feature.
 
-You need Windows, [uv](https://docs.astral.sh/uv/), Node, and a free [Groq API key](https://console.groq.com/keys). Accept the terms for Groq's [Orpheus voice](https://console.groq.com/playground?model=canopylabs%2Forpheus-v1-english) once, or Jarvis falls back to the robotic Windows voice.
+## What he says
+
+| When | Jarvis goes |
+|---|---|
+| Claude finishes | A fresh, Groq-written rundown of what just happened, dripping with dry British sarcasm |
+| Claude wants permission | "Sir, I am waiting for your approval." |
+| Claude shows you a menu or a plan | Same line. He's not going to click it for you. |
+| Something exploded | "Sir, the task is complete." Jarvis never admits defeat. |
+
+## Install (2 minutes, tops)
+
+You need:
+- Windows
+- [uv](https://docs.astral.sh/uv/) and Node
+- a free [Groq API key](https://console.groq.com/keys)
+- one click on "accept terms" for Groq's [Orpheus voice](https://console.groq.com/playground?model=canopylabs%2Forpheus-v1-english). Skip it and Jarvis talks like a 2003 GPS unit.
 
 ```powershell
 setx GROQ_API_KEY "gsk_..."
 ```
 
-Restart your terminal or VS Code, then in Claude Code:
+Restart VS Code (all of it, Windows is petty about environment variables), then in Claude Code:
 
 ```
 /plugin marketplace add ram-7900/jarvis
 /plugin install jarvis@jarvis
 ```
 
-Restart Claude Code once more. Done. Jarvis is on in every project.
+Restart once more. Jarvis now lives in every project. There is no escape.
 
-## Shut him up
+## Shut him up 🤫
 
-Type `/jarvis:stfu`. Jarvis stops mid-sentence, and Claude never even sees the command, so there's no reply for Jarvis to comment on.
+```
+/jarvis:stfu
+```
 
-Sending any other prompt also stops him, and a newer line always cuts off an older one.
+He stops mid-sentence. Claude never even sees the command, so Jarvis can't get the last word in, and trust us, he'd try.
 
-## Update
+Typing any other prompt also stops him. A newer line always cuts off an older one, so there's no double-Jarvis choir.
+
+## Keep him fresh
 
 ```
 /plugin marketplace update jarvis
 /plugin update jarvis@jarvis
 ```
 
-## Poke at it
+## Mess with him
 
 ```bash
-# hear it
+# hear him roast a typo fix
 echo '{"last_assistant_message":"Fixed a typo."}' | uv run agent/jarvis.py
-# just read it
+# read the roast without the audio
 echo '{"last_assistant_message":"Fixed a typo."}' | JARVIS_DRY=1 uv run agent/jarvis.py
-# redo the fixed sounds
+# rebuild the backup sounds
 node scripts/generate-sounds.mjs
 ```
 
-- **Different voice:** set `VOICE` in `agent/jarvis.py` to `autumn`, `diana`, `hannah`, `austin`, `daniel` or `troy`.
-- **More attitude:** edit the instructions in `agent/jarvis.py`.
+- **New voice:** set `VOICE` in `agent/jarvis.py` to `autumn`, `diana`, `hannah`, `austin`, `daniel` or `troy`. Daniel won the audition. Austin came a close second and is taking it well.
+- **More attitude:** edit his instructions in `agent/jarvis.py`. Make him nicer, or make him meaner. We don't judge. He does.
 
-## How it works
+## How the magic works
 
-1. Claude finishes a turn, and the plugin's `Stop` hook fires in the background.
-2. `agent/jarvis.py` sends the end of Claude's reply to Groq through [agno](https://docs.agno.com/models/groq), and gets back a "Sir, ..." line.
-3. Groq's Orpheus model speaks it in a human voice (Daniel), sentence by sentence in parallel, and the pieces are joined and turned up. If Orpheus fails, `scripts/voice.mjs` uses the Windows voice instead.
+1. Claude finishes a turn, and a `Stop` hook quietly kicks off Jarvis in the background. Claude doesn't wait for him.
+2. `agent/jarvis.py` sends the end of Claude's reply to Groq through [agno](https://docs.agno.com/models/groq). Back comes a "Sir, ..." line with attitude.
+3. Groq's Orpheus voice (Daniel) reads it sentence by sentence, all at once in parallel, stitched into one clip and cranked loud.
+4. If Orpheus flakes, the Windows voice steps in. It's a robot and it knows it.
 
-The approval line also plays when Claude asks for a permission, shows you an options menu, or wants a plan approved.
+Permission prompts, option menus and plan approvals get the "waiting for your approval" line.
 
-Heads-up: the end of each Claude reply goes to Groq to be summarized.
+**Privacy footnote:** the end of each Claude reply goes to Groq to be turned into sass. Don't paste your nuclear launch codes into Claude.
+
+---
+
+*Built in one sitting by a human and the AI that is, technically, Jarvis's ghostwriter.* 🎤

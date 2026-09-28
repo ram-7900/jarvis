@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Jarvis is a fun, casual Claude Code plugin: a sarcastic JARVIS voice speaks when Claude finishes or needs permission. See [README.md](README.md) for what it does and how to install it.
+Jarvis is a just-for-fun Claude Code plugin: a sarcastic British butler (Groq Orpheus voice `daniel`) speaks when Claude finishes or needs you. See [README.md](README.md) for the pitch and install.
 
 ## Layout
 
@@ -23,6 +23,7 @@ node scripts/generate-sounds.mjs
 
 ## Rules
 
+- Vibe: this project is not serious. Keep README, command descriptions and user-facing text funny, casual and a little cheeky. Keep CLAUDE.md accurate.
 - Keep code minimal. Use the documented pattern from the official docs, and add nothing the task does not need.
 - After any change to the plugin:
   1. Bump `version` in `.claude-plugin/plugin.json`.
