@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Jarvis is a just-for-fun Claude Code plugin: a sarcastic British butler (local Piper voice `en_GB-alan-medium`) speaks when Claude finishes or needs you. See [README.md](README.md) for the pitch and install.
+Jarvis is a just-for-fun Claude Code plugin: a sarcastic British butler (local Piper voice `en_GB-northern_english_male-medium`) speaks when Claude finishes or needs you. See [README.md](README.md) for the pitch and install.
 
 ## Layout
 

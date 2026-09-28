@@ -70,14 +70,14 @@ echo '{"last_assistant_message":"Fixed a typo."}' | JARVIS_DRY=1 uv run agent/ja
 node scripts/generate-sounds.mjs
 ```
 
-- **New voice:** set `VOICE` in `agent/jarvis.py` to any [Piper voice](https://huggingface.co/rhasspy/piper-voices), like `en_GB-northern_english_male-medium`. Alan got the job. Daniel from Groq was great, but he cost 900 tokens a sentence and got fired by the free tier.
+- **New voice:** set `VOICE` in `agent/jarvis.py` to any [Piper voice](https://huggingface.co/rhasspy/piper-voices), like `en_GB-alan-medium`. The northern English gent got the job. Alan was a close second and is taking it well. Daniel from Groq was great, but he cost 900 tokens a sentence and got fired by the free tier.
 - **More attitude:** edit his instructions in `agent/jarvis.py`. Make him nicer, or make him meaner. We don't judge. He does.
 
 ## How the magic works
 
 1. Claude finishes a turn, and a `Stop` hook quietly kicks off Jarvis in the background. Claude doesn't wait for him.
 2. `agent/jarvis.py` sends the end of Claude's reply to Groq through [agno](https://docs.agno.com/models/groq). Back comes a "Sir, ..." line with attitude.
-3. [Piper](https://github.com/OHF-Voice/piper1-gpl) reads it aloud as Alan, a British voice running entirely on your machine. Free, unlimited and offline, then cranked loud.
+3. [Piper](https://github.com/OHF-Voice/piper1-gpl) reads it aloud in a northern English accent, a British voice running entirely on your machine. Free, unlimited and offline, then cranked loud.
 4. If Piper flakes, the Windows voice steps in. It's a robot and it knows it.
 
 Permission prompts, option menus and plan approvals get the "waiting for your approval" line.

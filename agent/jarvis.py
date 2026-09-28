@@ -12,7 +12,7 @@ load_dotenv(ROOT / ".env")
 PID = Path(tempfile.gettempdir()) / "jarvis.pid"
 STOP = f"Get-Content '{PID}' -EA 0 | % {{ Stop-Process -Id $_ -Force -EA 0 }}"
 sys.stdout.reconfigure(encoding="utf-8")  # hook stdout is cp1252; Groq sends curly quotes
-VOICE = "en_GB-alan-medium"  # any Piper voice: https://huggingface.co/rhasspy/piper-voices
+VOICE = "en_GB-northern_english_male-medium"  # any Piper voice: https://huggingface.co/rhasspy/piper-voices
 VOICES = Path(os.getenv("CLAUDE_PLUGIN_DATA", ROOT / ".voices"))  # survives plugin updates
 
 
