@@ -4,9 +4,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project state
 
-This repository contains [BRD.md](BRD.md), the business requirements for **Jarvis**, a Claude Code plugin, plus the default sound cues. No plugin code, build, lint or test tooling exists yet.
+This repository contains [BRD.md](BRD.md), the business requirements for **Jarvis**, a Claude Code plugin, plus the voice pipeline and a summary agent. The plugin itself (hooks, `/jarvis` command, marketplace manifest) does not exist yet. BRD.md is the source of truth; requirement IDs (FR-n, NFR-n, AC-n) are referenced from it.
 
-The default cues in `sounds/` are robot-voice lines ("Sir, the task is complete." and so on). They are made from the Windows built-in voice with a ring-modulator, comb and bit-crush effect. Regenerate them on Windows with `node scripts/generate-sounds.mjs`; the WAV files are committed, so other platforms only play them. Change the spoken lines in `CUES` and the effect in the constants below it in [scripts/generate-sounds.mjs](scripts/generate-sounds.mjs). BRD.md is the source of truth; requirement IDs (FR-n, NFR-n, AC-n) are referenced from it. Update this file with real commands and layout once code lands.
+## Commands
+
+```
+uv sync                                          # install Python deps (agno, groq) into .venv
+node scripts/generate-sounds.mjs                 # regenerate the fixed cues in sounds/ (Windows only)
+node scripts/voice.mjs "Sir, hello." out.wav     # render any line in the Jarvis voice (Windows only)
+echo "Done. Tests pass." | uv run agent/jarvis.py              # summarize, speak and play
+echo "Should I continue?" | JARVIS_DRY=1 uv run agent/jarvis.py # print cue and line, no sound
+```
+
+There are no automated tests yet. `JARVIS_DRY=1` is the way to check classification.
+
+## Voice and agent
+
+- [scripts/voice.mjs](scripts/voice.mjs) renders text with the Windows built-in voice (System.Speech via PowerShell), then applies a light ring-modulator, comb, doubling, room reverb and soft limiter in pure Node. The effect and volume are the constants at the top. It exports `voiceWav(text)` and has a CLI.
+- [scripts/generate-sounds.mjs](scripts/generate-sounds.mjs) uses `voiceWav` to write the three fixed cues. The WAV files are committed, so other platforms only play them.
+- [agent/jarvis.py](agent/jarvis.py) reads Claude's final reply on stdin and sends only the last 2000 characters to a Groq model through an agno `Agent` with `output_schema=Spoken` (cue plus a short "Sir, ..." line). It renders the line with `scripts/voice.mjs` and plays it. With no `GROQ_API_KEY`, or on any failure, it falls back to a keyword guess and the fixed WAV. It never raises.
+- Config comes from the environment or a git-ignored `.env` in the repo root (see [.env.example](.env.example)): `GROQ_API_KEY`, optional `JARVIS_GROQ_MODEL`.
+- The agent goes beyond the BRD: it adds Python dependencies (NFR-3), network calls that send reply text to Groq (NFR-4), and spoken status (listed as future work). The fixed-WAV fallback keeps the BRD behaviour when the agent is off.
 
 ## What Jarvis does
 
@@ -29,9 +47,9 @@ Jarvis plays one of three sound cues when Claude Code finishes a turn, so the us
 
 - The hook must return immediately; play sound in a detached process (NFR-1).
 - Any failure (unreadable transcript, missing player, bad payload) must be silent and must never break Claude Code (NFR-2). A missing or unreadable transcript plays task completed (AC-10).
-- Node only, with no npm dependencies (NFR-3). No network access or telemetry (NFR-4).
+- Node only, with no npm dependencies (NFR-3), and no network access or telemetry (NFR-4), except in the optional summary agent.
 - `JARVIS_DRY=1` prints the chosen cue instead of playing it (NFR-7). Use it for testing classification without sound; acceptance criteria AC-1 to AC-6 and AC-10 are meant to be verified this way.
 
 ## Out of scope for this version
 
-Visual or desktop notifications, text-to-speech, per-project or per-session toggles, volume control, quiet hours, and subagent cues. Do not add these unless asked; they are listed as future work in BRD.md section 10.
+Visual or desktop notifications, per-project or per-session toggles, volume control, quiet hours, and subagent cues. Do not add these unless asked; they are listed as future work in BRD.md section 10.

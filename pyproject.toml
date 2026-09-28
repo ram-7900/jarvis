@@ -1,0 +1,8 @@
+[project]
+name = "jarvis-agent"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "agno>=3.0.11",
+    "groq>=1.7.0",
+]
