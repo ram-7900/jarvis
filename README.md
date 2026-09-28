@@ -14,7 +14,7 @@ A Claude Code plugin that talks back. When Claude finishes, gets stuck, or wants
 
 ## Install
 
-You need Windows, [uv](https://docs.astral.sh/uv/), Node, and a free [Groq API key](https://console.groq.com/keys).
+You need Windows, [uv](https://docs.astral.sh/uv/), Node, and a free [Groq API key](https://console.groq.com/keys). Accept the terms for Groq's [Orpheus voice](https://console.groq.com/playground?model=canopylabs%2Forpheus-v1-english) once, or Jarvis falls back to the robotic Windows voice.
 
 ```powershell
 setx GROQ_API_KEY "gsk_..."
@@ -53,14 +53,14 @@ echo '{"last_assistant_message":"Fixed a typo."}' | JARVIS_DRY=1 uv run agent/ja
 node scripts/generate-sounds.mjs
 ```
 
-- **Louder or softer:** tweak `PEAK` and `DRIVE` at the top of `scripts/voice.mjs`.
+- **Different voice:** set `VOICE` in `agent/jarvis.py` to `autumn`, `diana`, `hannah`, `austin`, `daniel` or `troy`.
 - **More attitude:** edit the instructions in `agent/jarvis.py`.
 
 ## How it works
 
 1. Claude finishes a turn, and the plugin's `Stop` hook fires in the background.
 2. `agent/jarvis.py` sends the end of Claude's reply to Groq through [agno](https://docs.agno.com/models/groq), and gets back a "Sir, ..." line.
-3. `scripts/voice.mjs` speaks it with the Windows voice, turns it up, and plays it.
+3. Groq's Orpheus model speaks it in a human voice (Daniel), sentence by sentence in parallel, and the pieces are joined and turned up. If Orpheus fails, `scripts/voice.mjs` uses the Windows voice instead.
 
 The approval line also plays when Claude asks for a permission, shows you an options menu, or wants a plan approved.
 

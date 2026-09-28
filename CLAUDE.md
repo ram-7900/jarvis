@@ -10,8 +10,8 @@ Jarvis is a fun, casual Claude Code plugin: a sarcastic JARVIS voice speaks when
   - The Stop hook runs `agent/jarvis.py` async. The script writes its player PID to `%TEMP%/jarvis.pid`.
   - UserPromptSubmit has two hooks. An async one kills that PID, so any prompt interrupts Jarvis. A sync one, [scripts/stfu.sh](scripts/stfu.sh), exits 2 on `/jarvis:stfu` or `/stfu`, which erases the prompt so no turn runs and Jarvis has nothing to say. `commands/stfu.md` only exists for autocomplete.
   - The Notification hook (matcher `permission_prompt`) and the PreToolUse hook (matcher `AskUserQuestion|ExitPlanMode`) play `sounds/needs-action.wav`.
-- [agent/jarvis.py](agent/jarvis.py): an agno `Agent` on Groq. It reads `last_assistant_message` from the hook JSON on stdin and speaks a "Sir, ..." line.
-- [scripts/voice.mjs](scripts/voice.mjs): Windows System.Speech, normalized and soft-limited for loudness in pure Node. [scripts/generate-sounds.mjs](scripts/generate-sounds.mjs) writes the fixed fallback WAVs.
+- [agent/jarvis.py](agent/jarvis.py): an agno `Agent` on Groq. It reads `last_assistant_message` from the hook JSON on stdin and writes a "Sir, ..." line. `orpheus()` speaks it with Groq `canopylabs/orpheus-v1-english`: 200 characters max per call, so it splits by sentence, calls in parallel, strips Groq's streaming WAV headers, soft-limits and writes one 24 kHz WAV. Falls back to `scripts/voice.mjs`.
+- [scripts/voice.mjs](scripts/voice.mjs): fallback voice: Windows System.Speech, normalized and soft-limited in pure Node. [scripts/generate-sounds.mjs](scripts/generate-sounds.mjs) writes the fixed fallback WAVs.
 
 ## Commands
 
