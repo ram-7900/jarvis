@@ -13,16 +13,18 @@ uv sync                                          # install Python deps (agno, gr
 node scripts/generate-sounds.mjs                 # regenerate the fixed cues in sounds/ (Windows only)
 node scripts/voice.mjs "Sir, hello." out.wav     # render any line in the Jarvis voice (Windows only)
 echo "Done. Tests pass." | uv run agent/jarvis.py              # summarize, speak and play
-echo "Should I continue?" | JARVIS_DRY=1 uv run agent/jarvis.py # print cue and line, no sound
+echo "Should I continue?" | JARVIS_DRY=1 uv run agent/jarvis.py # print the line, no sound
 ```
 
-There are no automated tests yet. `JARVIS_DRY=1` is the way to check classification.
+There are no automated tests yet. `JARVIS_DRY=1` prints the spoken line instead of playing it.
+
+Keep code minimal: use the documented pattern from official docs, and do not add fallbacks, config or helpers that the task does not need.
 
 ## Voice and agent
 
 - [scripts/voice.mjs](scripts/voice.mjs) renders text with the Windows built-in voice (System.Speech via PowerShell), then applies a light ring-modulator, comb, doubling, room reverb and soft limiter in pure Node. The effect and volume are the constants at the top. It exports `voiceWav(text)` and has a CLI.
 - [scripts/generate-sounds.mjs](scripts/generate-sounds.mjs) uses `voiceWav` to write the three fixed cues. The WAV files are committed, so other platforms only play them.
-- [agent/jarvis.py](agent/jarvis.py) reads Claude's final reply on stdin and sends only the last 2000 characters to a Groq model through an agno `Agent` with `output_schema=Spoken` (cue plus a short "Sir, ..." line). It renders the line with `scripts/voice.mjs` and plays it. With no `GROQ_API_KEY`, or on any failure, it falls back to a keyword guess and the fixed WAV. It never raises.
+- [agent/jarvis.py](agent/jarvis.py) is a minimal agno `Agent` on Groq, per https://docs.agno.com/models/groq. It reads Claude's final reply on stdin, sends the last 2000 characters, gets back one "Sir, ..." line, renders it with `scripts/voice.mjs` and plays it. On any failure it plays `sounds/completed.wav`.
 - Config comes from the environment or a git-ignored `.env` in the repo root (see [.env.example](.env.example)): `GROQ_API_KEY`, optional `JARVIS_GROQ_MODEL`.
 - The agent goes beyond the BRD: it adds Python dependencies (NFR-3), network calls that send reply text to Groq (NFR-4), and spoken status (listed as future work). The fixed-WAV fallback keeps the BRD behaviour when the agent is off.
 
