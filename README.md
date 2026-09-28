@@ -70,7 +70,7 @@ echo '{"last_assistant_message":"Fixed a typo."}' | JARVIS_DRY=1 uv run agent/ja
 node scripts/generate-sounds.mjs
 ```
 
-- **New voice:** set `VOICE` in `agent/jarvis.py` to any [Piper voice](https://huggingface.co/rhasspy/piper-voices), like `en_GB-alan-medium`. The northern English gent got the job. Alan was a close second and is taking it well. Daniel from Groq was great, but he cost 900 tokens a sentence and got fired by the free tier.
+- **New voice:** set `VOICE` in `agent/jarvis.py` to any [Piper voice](https://huggingface.co/rhasspy/piper-voices), like `en_GB-alan-medium`. The northern English gent got the job. Alan was a close second and is taking it well. Daniel from Groq was great, but Groq's free tier only covers about four of his speeches a day, so he got fired.
 - **More attitude:** edit his instructions in `agent/jarvis.py`. Make him nicer, or make him meaner. We don't judge. He does.
 
 ## How the magic works
@@ -81,6 +81,15 @@ node scripts/generate-sounds.mjs
 4. If Piper flakes, the Windows voice steps in. It's a robot and it knows it.
 
 Permission prompts, option menus and plan approvals get the "waiting for your approval" line.
+
+## When he's being weird
+
+| Symptom | Diagnosis |
+|---|---|
+| Total silence | Restart VS Code. All of it. Hooks and `GROQ_API_KEY` only load on a fresh start. |
+| A robot from 2003 | His real voice failed to load, so the Windows voice filled in. Check `~/.claude/plugins/data/jarvis-jarvis/` has a `.onnx` file. |
+| "Sir, the task is complete," every single time | Groq didn't answer. Check your key, or your Wi-Fi, or your life choices. |
+| The first line took ages | He was downloading his voice. Only happens once. |
 
 **Privacy footnote:** the end of each Claude reply goes to Groq to be turned into sass. The voice itself is 100% local. Don't paste your nuclear launch codes into Claude.
 

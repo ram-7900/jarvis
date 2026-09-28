@@ -10,8 +10,8 @@ Jarvis is a just-for-fun Claude Code plugin: a sarcastic British butler (local P
   - The Stop hook runs `agent/jarvis.py` async. The script writes its player PID to `%TEMP%/jarvis.pid`.
   - UserPromptSubmit has two hooks. An async one kills that PID, so any prompt interrupts Jarvis. A sync one, [scripts/stfu.sh](scripts/stfu.sh), exits 2 on `/jarvis:stfu` or `/stfu`, which erases the prompt so no turn runs and Jarvis has nothing to say. `commands/stfu.md` only exists for autocomplete.
   - The Notification hook (matcher `permission_prompt`) and the PreToolUse hook (matcher `AskUserQuestion|ExitPlanMode`) play `sounds/needs-action.wav`.
-- [agent/jarvis.py](agent/jarvis.py): an agno `Agent` on Groq. It reads `last_assistant_message` from the hook JSON on stdin and writes a "Sir, ..." line. `speak()` voices it with Piper, soft-limits and writes one WAV. The voice model downloads on first use into `${CLAUDE_PLUGIN_DATA}`, or `.voices/` locally (git-ignored), so plugin updates keep it. Falls back to `scripts/voice.mjs`. Groq Orpheus was dropped: the free tier allows only 3600 TTS tokens a day.
-- [scripts/voice.mjs](scripts/voice.mjs): fallback voice: Windows System.Speech, normalized and soft-limited in pure Node. [scripts/generate-sounds.mjs](scripts/generate-sounds.mjs) writes the fixed fallback WAVs.
+- [agent/jarvis.py](agent/jarvis.py): an agno `Agent` on Groq. It reads `last_assistant_message` from the hook JSON on stdin and writes a "Sir, ..." line. `speak()` voices it with Piper, soft-limits and writes one WAV. The voice model downloads on first use into `${CLAUDE_PLUGIN_DATA}` (`~/.claude/plugins/data/jarvis-jarvis/`), or `.voices/` locally (git-ignored), so plugin updates keep it. Falls back to `scripts/voice.mjs`. Groq Orpheus was dropped: the free tier allows only 3600 TTS tokens a day.
+- [scripts/voice.mjs](scripts/voice.mjs): fallback voice: Windows System.Speech, normalized and soft-limited in pure Node. [scripts/generate-sounds.mjs](scripts/generate-sounds.mjs) writes the fixed WAVs. Only `needs-action.wav` and `completed.wav` are used; `blocked.wav` is a leftover.
 
 ## Commands
 
