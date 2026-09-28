@@ -4,16 +4,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project state
 
-This repository contains [BRD.md](BRD.md), the business requirements for **Jarvis**, a Claude Code plugin, plus the voice pipeline and a summary agent. The plugin itself (hooks, `/jarvis` command, marketplace manifest) does not exist yet. BRD.md is the source of truth; requirement IDs (FR-n, NFR-n, AC-n) are referenced from it.
+This repository contains [BRD.md](BRD.md), the business requirements for **Jarvis**, a Claude Code plugin, plus the voice pipeline and a summary agent. The repo is a Claude Code marketplace and plugin (`.claude-plugin/`). Hooks are inline in `plugin.json`: Stop runs `agent/jarvis.py` async; Notification with matcher `permission_prompt` plays `sounds/needs-action.wav`. The `/jarvis` command does not exist yet. BRD.md is the source of truth; requirement IDs (FR-n, NFR-n, AC-n) are referenced from it.
 
 ## Commands
 
 ```
+/plugin marketplace add ram-7900/jarvis     # in Claude Code, then:
+/plugin install jarvis@jarvis
+claude plugin validate .                         # check manifests
 uv sync                                          # install Python deps (agno, groq) into .venv
 node scripts/generate-sounds.mjs                 # regenerate the fixed cues in sounds/ (Windows only)
 node scripts/voice.mjs "Sir, hello." out.wav     # render any line in the Jarvis voice (Windows only)
-echo "Done. Tests pass." | uv run agent/jarvis.py              # summarize, speak and play
-echo "Should I continue?" | JARVIS_DRY=1 uv run agent/jarvis.py # print the line, no sound
+echo '{"last_assistant_message":"Done."}' | uv run agent/jarvis.py               # speak
+echo '{"last_assistant_message":"Continue?"}' | JARVIS_DRY=1 uv run agent/jarvis.py # print only
 ```
 
 There are no automated tests yet. `JARVIS_DRY=1` prints the spoken line instead of playing it.
@@ -24,8 +27,8 @@ Keep code minimal: use the documented pattern from official docs, and do not add
 
 - [scripts/voice.mjs](scripts/voice.mjs) renders text with the Windows built-in voice (System.Speech via PowerShell), then applies a light ring-modulator, comb, doubling, room reverb and soft limiter in pure Node. The effect and volume are the constants at the top. It exports `voiceWav(text)` and has a CLI.
 - [scripts/generate-sounds.mjs](scripts/generate-sounds.mjs) uses `voiceWav` to write the three fixed cues. The WAV files are committed, so other platforms only play them.
-- [agent/jarvis.py](agent/jarvis.py) is a minimal agno `Agent` on Groq, per https://docs.agno.com/models/groq. It reads Claude's final reply on stdin, sends the last 2000 characters, gets back one "Sir, ..." line, renders it with `scripts/voice.mjs` and plays it. On any failure it plays `sounds/completed.wav`.
-- Config comes from the environment or a git-ignored `.env` in the repo root (see [.env.example](.env.example)): `GROQ_API_KEY`, optional `JARVIS_GROQ_MODEL`.
+- [agent/jarvis.py](agent/jarvis.py) is a minimal agno `Agent` on Groq, per https://docs.agno.com/models/groq. It reads the Stop hook JSON on stdin, sends `last_assistant_message`, trimmed to the last 2000 characters, and gets back one "Sir, ..." line in a dry, sarcastic JARVIS voice. It then renders it with `scripts/voice.mjs` and plays it. On any failure it plays `sounds/completed.wav`.
+- `GROQ_API_KEY` must be a user environment variable for the installed plugin, because the plugin copy has no `.env`. Locally, a git-ignored `.env` in the repo root also works (see [.env.example](.env.example)): `GROQ_API_KEY`, optional `JARVIS_GROQ_MODEL`.
 - The agent goes beyond the BRD: it adds Python dependencies (NFR-3), network calls that send reply text to Groq (NFR-4), and spoken status (listed as future work). The fixed-WAV fallback keeps the BRD behaviour when the agent is off.
 
 ## What Jarvis does
@@ -55,3 +58,4 @@ Jarvis plays one of three sound cues when Claude Code finishes a turn, so the us
 ## Out of scope for this version
 
 Visual or desktop notifications, per-project or per-session toggles, volume control, quiet hours, and subagent cues. Do not add these unless asked; they are listed as future work in BRD.md section 10.
+- Hook commands run in Git Bash on Windows, where `${CLAUDE_PLUGIN_ROOT}` may be `/c/...`. `uv` accepts that; PowerShell does not, so the Notification hook wraps it in `cygpath -w`.

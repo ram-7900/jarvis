@@ -1,0 +1,6 @@
+{
+  "name": "jarvis",
+  "description": "Jarvis voice cues for Claude Code.",
+  "owner": { "name": "Sriram Maruvada" },
+  "plugins": [{ "name": "jarvis", "description": "Spoken Jarvis summary when Claude finishes, needs you, or is blocked.", "source": "./" }]
+}
