@@ -2,60 +2,30 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project state
+Jarvis is a fun, casual Claude Code plugin: a sarcastic JARVIS voice speaks when Claude finishes or needs permission. See [README.md](README.md) for what it does and how to install it.
 
-This repository contains [BRD.md](BRD.md), the business requirements for **Jarvis**, a Claude Code plugin, plus the voice pipeline and a summary agent. The repo is a Claude Code marketplace and plugin (`.claude-plugin/`). Hooks are inline in `plugin.json`: Stop runs `agent/jarvis.py` async; Notification with matcher `permission_prompt` plays `sounds/needs-action.wav`. The `/jarvis` command does not exist yet. BRD.md is the source of truth; requirement IDs (FR-n, NFR-n, AC-n) are referenced from it.
+## Layout
+
+- `.claude-plugin/`: the repo is both the marketplace and the plugin. The hooks are inline in `plugin.json`.
+  - The Stop hook runs `agent/jarvis.py` async.
+  - The Notification hook, with matcher `permission_prompt`, plays `sounds/needs-action.wav`.
+- [agent/jarvis.py](agent/jarvis.py): an agno `Agent` on Groq. It reads `last_assistant_message` from the hook JSON on stdin and speaks a "Sir, ..." line.
+- [scripts/voice.mjs](scripts/voice.mjs): Windows System.Speech plus a light robot effect in pure Node. [scripts/generate-sounds.mjs](scripts/generate-sounds.mjs) writes the fixed fallback WAVs.
 
 ## Commands
 
 ```
-/plugin marketplace add ram-7900/jarvis     # in Claude Code, then:
-/plugin install jarvis@jarvis
-claude plugin validate .                         # check manifests
-uv sync                                          # install Python deps (agno, groq) into .venv
-node scripts/generate-sounds.mjs                 # regenerate the fixed cues in sounds/ (Windows only)
-node scripts/voice.mjs "Sir, hello." out.wav     # render any line in the Jarvis voice (Windows only)
-echo '{"last_assistant_message":"Done."}' | uv run agent/jarvis.py               # speak
-echo '{"last_assistant_message":"Continue?"}' | JARVIS_DRY=1 uv run agent/jarvis.py # print only
+claude plugin validate .
+echo '{"last_assistant_message":"Done."}' | JARVIS_DRY=1 uv run agent/jarvis.py   # print the line, no sound
+node scripts/generate-sounds.mjs
 ```
 
-There are no automated tests yet. `JARVIS_DRY=1` prints the spoken line instead of playing it.
+## Rules
 
-Keep code minimal: use the documented pattern from official docs, and do not add fallbacks, config or helpers that the task does not need.
-
-## Voice and agent
-
-- [scripts/voice.mjs](scripts/voice.mjs) renders text with the Windows built-in voice (System.Speech via PowerShell), then applies a light ring-modulator, comb, doubling, room reverb and soft limiter in pure Node. The effect and volume are the constants at the top. It exports `voiceWav(text)` and has a CLI.
-- [scripts/generate-sounds.mjs](scripts/generate-sounds.mjs) uses `voiceWav` to write the three fixed cues. The WAV files are committed, so other platforms only play them.
-- [agent/jarvis.py](agent/jarvis.py) is a minimal agno `Agent` on Groq, per https://docs.agno.com/models/groq. It reads the Stop hook JSON on stdin, sends `last_assistant_message`, trimmed to the last 2000 characters, and gets back one "Sir, ..." line in a dry, sarcastic JARVIS voice. It then renders it with `scripts/voice.mjs` and plays it. On any failure it plays `sounds/completed.wav`.
-- `GROQ_API_KEY` must be a user environment variable for the installed plugin, because the plugin copy has no `.env`. Locally, a git-ignored `.env` in the repo root also works (see [.env.example](.env.example)): `GROQ_API_KEY`, optional `JARVIS_GROQ_MODEL`.
-- The agent goes beyond the BRD: it adds Python dependencies (NFR-3), network calls that send reply text to Groq (NFR-4), and spoken status (listed as future work). The fixed-WAV fallback keeps the BRD behaviour when the agent is off.
-
-## What Jarvis does
-
-Jarvis plays one of three sound cues when Claude Code finishes a turn, so the user can work in other windows:
-
-- **needs action**: a permission request (Notification hook), or a final reply that ends by asking the user something
-- **blocked**: a final reply that says Claude is blocked, stuck, waiting on someone, or cannot proceed
-- **task completed**: any other finished turn, including one with no reply text
-
-## Architecture (as specified)
-
-- **One repo is both the marketplace and the plugin** (FR-19). Install flow: `/plugin marketplace add <repo>` then `/plugin install jarvis@jarvis`.
-- **Hooks drive everything.** The Stop hook classifies the finished turn. The Notification hook plays needs action for permission requests but must stay silent on the idle "waiting for your input" notification, which would repeat a cue already played (FR-6). Paths resolve through `${CLAUDE_PLUGIN_ROOT}`.
-- **Classification** reads only the tail of the transcript (NFR-5) and inspects the last part of Claude's final reply (FR-7). Blocked wins over needs action (FR-8). Exactly one cue per turn (FR-5). Claude Code has no "blocked" event, so blocked is a keyword guess; keep the keyword lists in one place so they are easy to extend.
-- **Control** is a `/jarvis` command with `on`, `off`, `status`, `test`. On/off state must persist across restarts and defaults to on (FR-13, FR-14). `test` plays all three cues in order and reports which are custom.
-- **Sounds**: `sounds/needs-action.wav`, `sounds/completed.wav`, `sounds/blocked.wav` are used when present, read at play time so no reinstall is needed (FR-17). When a file is missing, fall back to a distinct system sound per cue; on Linux the fallback is the terminal bell. Custom sounds must be `.wav` because the Windows built-in player does not play mp3.
-- **Playback per OS**: PowerShell on Windows, `afplay` on macOS, `paplay` on Linux.
-
-## Hard constraints
-
-- The hook must return immediately; play sound in a detached process (NFR-1).
-- Any failure (unreadable transcript, missing player, bad payload) must be silent and must never break Claude Code (NFR-2). A missing or unreadable transcript plays task completed (AC-10).
-- Node only, with no npm dependencies (NFR-3), and no network access or telemetry (NFR-4), except in the optional summary agent.
-- `JARVIS_DRY=1` prints the chosen cue instead of playing it (NFR-7). Use it for testing classification without sound; acceptance criteria AC-1 to AC-6 and AC-10 are meant to be verified this way.
-
-## Out of scope for this version
-
-Visual or desktop notifications, per-project or per-session toggles, volume control, quiet hours, and subagent cues. Do not add these unless asked; they are listed as future work in BRD.md section 10.
-- Hook commands run in Git Bash on Windows, where `${CLAUDE_PLUGIN_ROOT}` may be `/c/...`. `uv` accepts that; PowerShell does not, so the Notification hook wraps it in `cygpath -w`.
+- Keep code minimal. Use the documented pattern from the official docs, and add nothing the task does not need.
+- After any change to the plugin:
+  1. Bump `version` in `.claude-plugin/plugin.json`.
+  2. Commit and push.
+  3. Run `claude plugin marketplace update jarvis` and `claude plugin update jarvis@jarvis`, so the installed copy stays current.
+- `GROQ_API_KEY` comes from the user environment. `.env` is git-ignored and never committed.
+- Hook commands run in Git Bash on Windows, where `${CLAUDE_PLUGIN_ROOT}` may be `/c/...`. `uv` accepts that path form. PowerShell does not, so the Notification hook wraps the path in `cygpath -w`.
