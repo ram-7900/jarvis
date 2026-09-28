@@ -8,18 +8,18 @@ import { fileURLToPath } from "node:url";
 import { execFileSync } from "node:child_process";
 
 const RATE = 44100;
-const PEAK = 0.97; // just under full scale
-const DRIVE = 2.5; // soft-limiter drive; higher is louder on average but harsher
+const PEAK = 0.99; // just under full scale
+const DRIVE = 3; // soft-limiter drive; higher is louder on average but harsher
 const VOICE = "Microsoft David Desktop";
 // Effect settings. Aim: a human voice with a light synthetic sheen, like an AI assistant.
 // Raise RING_MIX and COMB_FEEDBACK for more robot; lower them for more human.
 const RING_HZ = 90; // ring modulator carrier; lower is more "Dalek"
-const RING_MIX = 0.12; // 0 = clean voice, 1 = fully ring-modulated
+const RING_MIX = 0.07; // 0 = clean voice, 1 = fully ring-modulated
 const COMB_MS = 3.5; // short metallic resonance
-const COMB_FEEDBACK = 0.28;
+const COMB_FEEDBACK = 0.18;
 const DOUBLE_MS = 14; // delayed copy that thickens the voice, like a speaker in a helmet
-const DOUBLE_MIX = 0.25;
-const ROOM_MIX = 0.12; // small room reverb so it sounds present, not dry
+const DOUBLE_MIX = 0.15;
+const ROOM_MIX = 0.07; // small room reverb so it sounds present, not dry
 
 const PS = `
 param([string]$Text, [string]$Out, [string]$Voice)

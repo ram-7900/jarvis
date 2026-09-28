@@ -1,6 +1,6 @@
 {
   "name": "jarvis",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Spoken Jarvis summary when Claude finishes, needs you, or is blocked.",
   "author": {
     "name": "Sriram Maruvada"
@@ -37,6 +37,17 @@
             "type": "command",
             "async": true,
             "command": "powershell -c \"(New-Object Media.SoundPlayer '$(cygpath -w \"${CLAUDE_PLUGIN_ROOT}\")/sounds/needs-action.wav').PlaySync()\""
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "async": true,
+            "command": "powershell -c 'Get-Content $env:TEMP/jarvis.pid -EA 0 | % { Stop-Process -Id $_ -Force -EA 0 }'"
           }
         ]
       }

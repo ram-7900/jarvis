@@ -7,7 +7,8 @@ Jarvis is a fun, casual Claude Code plugin: a sarcastic JARVIS voice speaks when
 ## Layout
 
 - `.claude-plugin/`: the repo is both the marketplace and the plugin. The hooks are inline in `plugin.json`.
-  - The Stop hook runs `agent/jarvis.py` async.
+  - The Stop hook runs `agent/jarvis.py` async. The script writes its player PID to `%TEMP%/jarvis.pid`.
+  - The UserPromptSubmit hook kills that PID, so typing a prompt interrupts Jarvis.
   - The Notification hook (matcher `permission_prompt`) and the PreToolUse hook (matcher `AskUserQuestion|ExitPlanMode`) play `sounds/needs-action.wav`.
 - [agent/jarvis.py](agent/jarvis.py): an agno `Agent` on Groq. It reads `last_assistant_message` from the hook JSON on stdin and speaks a "Sir, ..." line.
 - [scripts/voice.mjs](scripts/voice.mjs): Windows System.Speech plus a light robot effect in pure Node. [scripts/generate-sounds.mjs](scripts/generate-sounds.mjs) writes the fixed fallback WAVs.
