@@ -25,7 +25,6 @@ try:
 except Exception:
     line, wav = "fallback", ROOT / "sounds/completed.wav"
 
-if os.getenv("JARVIS_DRY"):
-    print(line)
-else:
+print(line)
+if not os.getenv("JARVIS_DRY"):
     subprocess.run(["powershell", "-c", f"(New-Object Media.SoundPlayer '{wav}').PlaySync()"])
