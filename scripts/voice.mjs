@@ -1,5 +1,5 @@
-// Renders text as a Jarvis voice WAV: Windows built-in voice (System.Speech), then a light
-// robot effect in pure Node. Rendering needs Windows; the WAV files play everywhere.
+// Renders text as a Jarvis voice WAV: Windows built-in voice (System.Speech), then
+// normalized and made loud in pure Node. Rendering needs Windows; the WAV files play everywhere.
 // CLI: node scripts/voice.mjs "<text>" <out.wav>
 import { writeFileSync, readFileSync, mkdtempSync, rmSync } from "node:fs";
 import { join } from "node:path";
@@ -11,15 +11,6 @@ const RATE = 44100;
 const PEAK = 0.99; // just under full scale
 const DRIVE = 3; // soft-limiter drive; higher is louder on average but harsher
 const VOICE = "Microsoft David Desktop";
-// Effect settings. Aim: a human voice with a light synthetic sheen, like an AI assistant.
-// Raise RING_MIX and COMB_FEEDBACK for more robot; lower them for more human.
-const RING_HZ = 90; // ring modulator carrier; lower is more "Dalek"
-const RING_MIX = 0.07; // 0 = clean voice, 1 = fully ring-modulated
-const COMB_MS = 3.5; // short metallic resonance
-const COMB_FEEDBACK = 0.18;
-const DOUBLE_MS = 14; // delayed copy that thickens the voice, like a speaker in a helmet
-const DOUBLE_MIX = 0.15;
-const ROOM_MIX = 0.07; // small room reverb so it sounds present, not dry
 
 const PS = `
 param([string]$Text, [string]$Out, [string]$Voice)
@@ -58,52 +49,10 @@ function readWav(b) {
   throw new Error("no data chunk");
 }
 
-function robotize(x) {
-  const y = new Float64Array(x.length);
-  // Ring modulation blended with the dry voice keeps words clear.
-  for (let i = 0; i < x.length; i++) {
-    const ring = x[i] * Math.sin((2 * Math.PI * RING_HZ * i) / RATE);
-    y[i] = x[i] * (1 - RING_MIX) + ring * RING_MIX * 1.4;
-  }
-  // Feedback comb filter gives a light metallic body.
-  const d = Math.round((COMB_MS / 1000) * RATE);
-  for (let i = d; i < y.length; i++) y[i] += y[i - d] * COMB_FEEDBACK;
-  // Doubling: add a delayed copy of the voice.
-  const dd = Math.round((DOUBLE_MS / 1000) * RATE);
-  for (let i = y.length - 1; i >= dd; i--) y[i] += y[i - dd] * DOUBLE_MIX;
-  const out = room(y);
+function normalize(x) {
   let max = 0;
-  for (const v of out) max = Math.max(max, Math.abs(v));
-  return out.map((v) => v / max);
-}
-
-// Small Schroeder reverb: parallel combs, then series allpasses.
-function room(dry) {
-  const tail = Math.floor(0.4 * RATE);
-  const x = new Float64Array(dry.length + tail);
-  x.set(dry);
-  const combs = [1116, 1188, 1277, 1356].map((d) => ({ d, b: new Float64Array(d), i: 0 }));
-  const aps = [556, 441].map((d) => ({ d, b: new Float64Array(d), i: 0 }));
-  const out = new Float64Array(x.length);
-  for (let n = 0; n < x.length; n++) {
-    let wet = 0;
-    for (const c of combs) {
-      const v = c.b[c.i];
-      c.b[c.i] = x[n] + v * 0.7;
-      c.i = (c.i + 1) % c.d;
-      wet += v;
-    }
-    wet /= combs.length;
-    for (const a of aps) {
-      const v = a.b[a.i];
-      const w = wet + v * 0.5;
-      a.b[a.i] = w;
-      a.i = (a.i + 1) % a.d;
-      wet = v - w * 0.5;
-    }
-    out[n] = x[n] * (1 - ROOM_MIX) + wet * ROOM_MIX;
-  }
-  return out;
+  for (const v of x) max = Math.max(max, Math.abs(v));
+  return x.map((v) => v / max);
 }
 
 // Trim leading and trailing silence, then add 50 ms of padding each side.
@@ -142,7 +91,7 @@ function toWav(samples) {
 export function voiceWav(text) {
   const tmp = mkdtempSync(join(tmpdir(), "jarvis-"));
   try {
-    return toWav(trim(robotize(speak(text, tmp))));
+    return toWav(trim(normalize(speak(text, tmp))));
   } finally {
     rmSync(tmp, { recursive: true, force: true });
   }

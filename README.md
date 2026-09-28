@@ -2,7 +2,7 @@
 
 > "Sir, the task is complete. I trust you'll notice the monumental improvement."
 
-A Claude Code plugin that talks back. When Claude finishes, gets stuck, or wants your permission, a slightly-robotic, mildly-sarcastic JARVIS tells you out loud. Go make coffee. Jarvis will call you.
+A Claude Code plugin that talks back. When Claude finishes, gets stuck, or wants your permission, a mildly-sarcastic JARVIS tells you out loud. Go make coffee. Jarvis will call you.
 
 **What this is:** a fun, f-around-and-find-out, chill 20-minute project. No roadmap, no SLA, no tests. Vibes and one Groq call.
 
@@ -53,14 +53,14 @@ echo '{"last_assistant_message":"Fixed a typo."}' | JARVIS_DRY=1 uv run agent/ja
 node scripts/generate-sounds.mjs
 ```
 
-- **More robot, less butler:** tweak `RING_MIX` and friends at the top of `scripts/voice.mjs`.
+- **Louder or softer:** tweak `PEAK` and `DRIVE` at the top of `scripts/voice.mjs`.
 - **More attitude:** edit the instructions in `agent/jarvis.py`.
 
 ## How it works
 
 1. Claude finishes a turn, and the plugin's `Stop` hook fires in the background.
 2. `agent/jarvis.py` sends the end of Claude's reply to Groq through [agno](https://docs.agno.com/models/groq), and gets back a "Sir, ..." line.
-3. `scripts/voice.mjs` speaks it with the Windows voice, adds a little helmet-speaker shimmer, and plays it.
+3. `scripts/voice.mjs` speaks it with the Windows voice, turns it up, and plays it.
 
 The approval line also plays when Claude asks for a permission, shows you an options menu, or wants a plan approved.
 

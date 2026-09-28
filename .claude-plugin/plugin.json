@@ -1,6 +1,6 @@
 {
   "name": "jarvis",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "Spoken Jarvis summary when Claude finishes, needs you, or is blocked.",
   "author": {
     "name": "Sriram Maruvada"
@@ -51,7 +51,7 @@
           },
           {
             "type": "command",
-            "command": "grep -qE '\"prompt\": ?\"/(jarvis:)?stfu' && { echo \"Jarvis: shutting up, sir.\" >&2; exit 2; } || true"
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/stfu.sh\""
           }
         ]
       }
