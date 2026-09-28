@@ -27,7 +27,7 @@ You need:
 - Windows
 - [uv](https://docs.astral.sh/uv/) and Node
 - a free [Groq API key](https://console.groq.com/keys)
-- one click on "accept terms" for Groq's [Orpheus voice](https://console.groq.com/playground?model=canopylabs%2Forpheus-v1-english). Skip it and Jarvis talks like a 2003 GPS unit.
+- about 60 MB of disk for his voice, which downloads itself the first time he speaks. That first line takes a bit longer. He's clearing his throat.
 
 ```powershell
 setx GROQ_API_KEY "gsk_..."
@@ -70,19 +70,19 @@ echo '{"last_assistant_message":"Fixed a typo."}' | JARVIS_DRY=1 uv run agent/ja
 node scripts/generate-sounds.mjs
 ```
 
-- **New voice:** set `VOICE` in `agent/jarvis.py` to `autumn`, `diana`, `hannah`, `austin`, `daniel` or `troy`. Daniel won the audition. Austin came a close second and is taking it well.
+- **New voice:** set `VOICE` in `agent/jarvis.py` to any [Piper voice](https://huggingface.co/rhasspy/piper-voices), like `en_GB-northern_english_male-medium`. Alan got the job. Daniel from Groq was great, but he cost 900 tokens a sentence and got fired by the free tier.
 - **More attitude:** edit his instructions in `agent/jarvis.py`. Make him nicer, or make him meaner. We don't judge. He does.
 
 ## How the magic works
 
 1. Claude finishes a turn, and a `Stop` hook quietly kicks off Jarvis in the background. Claude doesn't wait for him.
 2. `agent/jarvis.py` sends the end of Claude's reply to Groq through [agno](https://docs.agno.com/models/groq). Back comes a "Sir, ..." line with attitude.
-3. Groq's Orpheus voice (Daniel) reads it sentence by sentence, all at once in parallel, stitched into one clip and cranked loud.
-4. If Orpheus flakes, the Windows voice steps in. It's a robot and it knows it.
+3. [Piper](https://github.com/OHF-Voice/piper1-gpl) reads it aloud as Alan, a British voice running entirely on your machine. Free, unlimited and offline, then cranked loud.
+4. If Piper flakes, the Windows voice steps in. It's a robot and it knows it.
 
 Permission prompts, option menus and plan approvals get the "waiting for your approval" line.
 
-**Privacy footnote:** the end of each Claude reply goes to Groq to be turned into sass. Don't paste your nuclear launch codes into Claude.
+**Privacy footnote:** the end of each Claude reply goes to Groq to be turned into sass. The voice itself is 100% local. Don't paste your nuclear launch codes into Claude.
 
 ---
 

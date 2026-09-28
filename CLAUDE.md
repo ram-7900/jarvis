@@ -2,7 +2,7 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-Jarvis is a just-for-fun Claude Code plugin: a sarcastic British butler (Groq Orpheus voice `daniel`) speaks when Claude finishes or needs you. See [README.md](README.md) for the pitch and install.
+Jarvis is a just-for-fun Claude Code plugin: a sarcastic British butler (local Piper voice `en_GB-alan-medium`) speaks when Claude finishes or needs you. See [README.md](README.md) for the pitch and install.
 
 ## Layout
 
@@ -10,7 +10,7 @@ Jarvis is a just-for-fun Claude Code plugin: a sarcastic British butler (Groq Or
   - The Stop hook runs `agent/jarvis.py` async. The script writes its player PID to `%TEMP%/jarvis.pid`.
   - UserPromptSubmit has two hooks. An async one kills that PID, so any prompt interrupts Jarvis. A sync one, [scripts/stfu.sh](scripts/stfu.sh), exits 2 on `/jarvis:stfu` or `/stfu`, which erases the prompt so no turn runs and Jarvis has nothing to say. `commands/stfu.md` only exists for autocomplete.
   - The Notification hook (matcher `permission_prompt`) and the PreToolUse hook (matcher `AskUserQuestion|ExitPlanMode`) play `sounds/needs-action.wav`.
-- [agent/jarvis.py](agent/jarvis.py): an agno `Agent` on Groq. It reads `last_assistant_message` from the hook JSON on stdin and writes a "Sir, ..." line. `orpheus()` speaks it with Groq `canopylabs/orpheus-v1-english`: 200 characters max per call, so it splits by sentence, calls in parallel, strips Groq's streaming WAV headers, soft-limits and writes one 24 kHz WAV. Falls back to `scripts/voice.mjs`.
+- [agent/jarvis.py](agent/jarvis.py): an agno `Agent` on Groq. It reads `last_assistant_message` from the hook JSON on stdin and writes a "Sir, ..." line. `speak()` voices it with Piper, soft-limits and writes one WAV. The voice model downloads on first use into `${CLAUDE_PLUGIN_DATA}`, or `.voices/` locally (git-ignored), so plugin updates keep it. Falls back to `scripts/voice.mjs`. Groq Orpheus was dropped: the free tier allows only 3600 TTS tokens a day.
 - [scripts/voice.mjs](scripts/voice.mjs): fallback voice: Windows System.Speech, normalized and soft-limited in pure Node. [scripts/generate-sounds.mjs](scripts/generate-sounds.mjs) writes the fixed fallback WAVs.
 
 ## Commands
